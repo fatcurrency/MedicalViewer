@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.15)
 project(MedicalViewer)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 # Qt
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
@@ -24,6 +27,7 @@ add_subdirectory(src/algorithms)
 add_executable(MedicalViewer src/main.cpp)
 
 target_link_libraries(MedicalViewer
+    MedicalViewerApp
     Qt5::Widgets
     ${ITK_LIBRARIES}
     ${VTK_LIBRARIES}

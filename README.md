@@ -335,7 +335,7 @@ plugins/
 
 ---
 
-# 七、专业建议（重要）
+# 七、注意事项
 
 ### 1️⃣ 一定使用 QVTKOpenGLWidget
 
