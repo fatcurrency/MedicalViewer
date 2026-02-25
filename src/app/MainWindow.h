@@ -4,6 +4,7 @@
 
 class QAction;
 class ImageViewWidget;
+class ImageToolWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -22,8 +23,9 @@ private:
 	void createToolBar();
 	void createStatusBar();
 
+	ImageToolWidget* imageToolWidget;
 	ImageViewWidget* imageViewWidget;
-
+	
 	QAction* openAction;
 	QAction* clearAction;
 	QAction* exitAction;

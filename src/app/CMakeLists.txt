@@ -3,6 +3,8 @@ add_library(MedicalViewerApp
 	MainWindow.cpp
 	ImageViewWidget.h
 	ImageViewWidget.cpp
+	ImageToolWidget.h
+	ImageToolWidget.cpp
 )
 
 target_link_libraries(MedicalViewerApp
