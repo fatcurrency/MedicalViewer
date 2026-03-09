@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget* parent)
     , imageViewWidget(new ImageViewWidget(this))
     , openAction(nullptr)
     , clearAction(nullptr)
+    , infoAction(nullptr)
     , exitAction(nullptr)
     , aboutAction(nullptr)
 {
@@ -56,12 +57,25 @@ void MainWindow::openFile()
 
     imageViewWidget->setFilePath(fileName);
     statusBar()->showMessage(tr("Loaded: %1").arg(fileName), 3000);
+
+    niftiInfoReader.loadInfo(fileName);
+    QMessageBox::information(this, tr("NIfTI Image Info"), niftiInfoReader.getInfo().isEmpty() ? tr("Failed to read image info") : niftiInfoReader.getInfo());
 }
 
 void MainWindow::clearCurrent()
 {
     imageViewWidget->clearView();
+    niftiInfoReader.clearInfo();
     statusBar()->showMessage(tr("Current display cleared"), 2000);
+}
+
+void MainWindow::showInfo()
+{
+    if (niftiInfoReader.getInfo().isEmpty()) {
+        QMessageBox::information(this, tr("Image Info"), tr("No image info available"));
+    } else {
+        QMessageBox::information(this, tr("Image Info"), niftiInfoReader.getInfo());
+    }
 }
 
 void MainWindow::showAbout()
@@ -84,6 +98,7 @@ void MainWindow::createMenus()
 
     auto* helpMenu = menuBar()->addMenu(tr("Help(&H)"));
     aboutAction = helpMenu->addAction(tr("About(&A)"), this, &MainWindow::showAbout);
+    infoAction = helpMenu->addAction(tr("Info(&I)"), this, &MainWindow::showInfo);
 }
 
 void MainWindow::createToolBar()
@@ -92,6 +107,7 @@ void MainWindow::createToolBar()
     mainToolBar->setMovable(false);
     mainToolBar->addAction(openAction);
     mainToolBar->addAction(clearAction);
+    mainToolBar->addAction(infoAction);
 }
 
 void MainWindow::createStatusBar()

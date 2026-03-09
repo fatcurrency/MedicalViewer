@@ -5,6 +5,7 @@ add_library(MedicalViewerApp
 	ImageViewWidget.cpp
 	ImageToolWidget.h
 	ImageToolWidget.cpp
+	../io/NiftiReader.cpp
 )
 
 target_link_libraries(MedicalViewerApp
