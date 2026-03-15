@@ -3,6 +3,7 @@
 add_library(MedicalViewerIO
     NiftiReader.cpp
     NiftiReader.h
+    itkImageCreator.h
 )
 
 # 链接依赖库

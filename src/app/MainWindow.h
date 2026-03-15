@@ -1,6 +1,7 @@
 #pragma once
 
 #include "io/NiftiReader.h"
+#include "render/VTKSliceViewer.h"
 #include <QMainWindow>
 
 class QAction;
@@ -27,6 +28,7 @@ private:
 
 	ImageToolWidget* imageToolWidget;
 	ImageViewWidget* imageViewWidget;
+	SliceViewer* sliceViewer;
 
 	NiftiInfoReader niftiInfoReader;
 	

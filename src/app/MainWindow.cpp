@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , imageToolWidget(new ImageToolWidget(this))
     , imageViewWidget(new ImageViewWidget(this))
+    , sliceViewer(new SliceViewer(this))
     , openAction(nullptr)
     , clearAction(nullptr)
     , infoAction(nullptr)
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     mainLayout->addWidget(imageToolWidget, 1);
     mainLayout->addWidget(imageViewWidget, 5);
-
+    mainLayout->addWidget(sliceViewer, 5);
     central->setLayout(mainLayout);
     setCentralWidget(central);
 
@@ -58,14 +59,21 @@ void MainWindow::openFile()
     imageViewWidget->setFilePath(fileName);
     statusBar()->showMessage(tr("Loaded: %1").arg(fileName), 3000);
 
-    niftiInfoReader.loadInfo(fileName);
+    niftiInfoReader.loadImageInfo(fileName);
     QMessageBox::information(this, tr("NIfTI Image Info"), niftiInfoReader.getInfo().isEmpty() ? tr("Failed to read image info") : niftiInfoReader.getInfo());
+    niftiInfoReader.printITKImageInfo();
+    niftiInfoReader.printVTKImageInfo();
+
+    auto vtkImage = niftiInfoReader.vtkImage();
+    sliceViewer->setImage(vtkImage, SliceViewer::Axial);
+
 }
 
 void MainWindow::clearCurrent()
 {
     imageViewWidget->clearView();
     niftiInfoReader.clearInfo();
+    niftiInfoReader.clearImageData();
     statusBar()->showMessage(tr("Current display cleared"), 2000);
 }
 

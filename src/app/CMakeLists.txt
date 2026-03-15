@@ -6,6 +6,7 @@ add_library(MedicalViewerApp
 	ImageToolWidget.h
 	ImageToolWidget.cpp
 	../io/NiftiReader.cpp
+	../render/VTKSliceViewer.cpp
 )
 
 target_link_libraries(MedicalViewerApp
