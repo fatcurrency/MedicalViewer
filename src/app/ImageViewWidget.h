@@ -1,6 +1,12 @@
 #pragma once
 
+#include "render/VTKSliceViewer.h"
+
 #include <QWidget>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
 
 class QLabel;
 
@@ -10,12 +16,16 @@ class ImageViewWidget : public QWidget
 
 public:
 	explicit ImageViewWidget(QWidget* parent = nullptr);
+	void setVtkImageData(vtkSmartPointer<vtkImageData> image);
+	void updateTextLabel(const QString& text);
 
 public slots:
-	void setFilePath(const QString& filePath);
 	void clearView();
 
 private:
-	QLabel* titleLabel;
-	QLabel* filePathLabel;
+	QGridLayout* twotwoGridLayout;
+	QLabel* textLabel;
+	SliceViewer* axialSliceViewer;
+	SliceViewer* sagittalSliceViewer;
+	SliceViewer* coronalSliceViewer;
 };

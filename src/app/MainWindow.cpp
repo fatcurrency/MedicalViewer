@@ -17,7 +17,6 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , imageToolWidget(new ImageToolWidget(this))
     , imageViewWidget(new ImageViewWidget(this))
-    , sliceViewer(new SliceViewer(this))
     , openAction(nullptr)
     , clearAction(nullptr)
     , infoAction(nullptr)
@@ -34,7 +33,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     mainLayout->addWidget(imageToolWidget, 1);
     mainLayout->addWidget(imageViewWidget, 5);
-    mainLayout->addWidget(sliceViewer, 5);
     central->setLayout(mainLayout);
     setCentralWidget(central);
 
@@ -56,7 +54,6 @@ void MainWindow::openFile()
         return;
     }
 
-    imageViewWidget->setFilePath(fileName);
     statusBar()->showMessage(tr("Loaded: %1").arg(fileName), 3000);
 
     niftiInfoReader.loadImageInfo(fileName);
@@ -65,8 +62,15 @@ void MainWindow::openFile()
     niftiInfoReader.printVTKImageInfo();
 
     auto vtkImage = niftiInfoReader.vtkImage();
-    sliceViewer->setImage(vtkImage, SliceViewer::Axial);
-
+    if (vtkImage)
+    {
+        imageViewWidget->setVtkImageData(vtkImage);
+        updateStatusBarLabels();
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load image data"));
+    }
 }
 
 void MainWindow::clearCurrent()
@@ -74,6 +78,7 @@ void MainWindow::clearCurrent()
     imageViewWidget->clearView();
     niftiInfoReader.clearInfo();
     niftiInfoReader.clearImageData();
+    updateStatusBarLabels();
     statusBar()->showMessage(tr("Current display cleared"), 2000);
 }
 
@@ -120,5 +125,53 @@ void MainWindow::createToolBar()
 
 void MainWindow::createStatusBar()
 {
+    m_fileLabel      = new QLabel(tr(" has no image loaded "), this);
+    m_imageSizeLabel = new QLabel(tr(" None "), this);
+
+    // 设置对象名，方便通过 QSS 样式化
+    m_fileLabel->setObjectName("statusFileLabel");
+    m_imageSizeLabel->setObjectName("statusImageSizeLabel");
+
+    auto* sepA = new QLabel(tr(" | "), this);
+    sepA->setEnabled(false);
+
+    statusBar()->addPermanentWidget(m_fileLabel);
+    statusBar()->addPermanentWidget(sepA);
+    statusBar()->addPermanentWidget(m_imageSizeLabel);
+
     statusBar()->showMessage(tr("Ready"));
+}
+
+void MainWindow::updateStatusBarLabels()
+{
+    const auto& shape = niftiInfoReader.shape();
+    if (shape.isEmpty())
+    {
+        m_fileLabel->setText(tr(" has no image loaded "));
+        m_imageSizeLabel->setText(tr(" None "));
+        return;
+    }
+
+    // 文件名（显示完整路径）
+    QString fileName = niftiInfoReader.fileName();
+    m_fileLabel->setText(tr("File: %1").arg(fileName));
+    m_fileLabel->setToolTip(fileName);
+
+    // 图像尺寸 + 间距
+    QString sizeStr;
+    sizeStr += tr("size: ");
+    for (int i = 0; i < shape.size(); ++i)
+    {
+        sizeStr += QString::number(shape[i]);
+        if (i + 1 < shape.size()) sizeStr += " × ";
+    }
+    if (niftiInfoReader.spacing().size() >= 3)
+    {
+        sizeStr += QString("  spacing: %1 / %2 / %3 mm")
+            .arg(niftiInfoReader.spacing()[0], 0, 'f', 2)
+            .arg(niftiInfoReader.spacing()[1], 0, 'f', 2)
+            .arg(niftiInfoReader.spacing()[2], 0, 'f', 2);
+    }
+    m_imageSizeLabel->setText(QString(" %1 ").arg(sizeStr));
+
 }

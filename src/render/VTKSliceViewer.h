@@ -2,9 +2,10 @@
 
 #include <QWidget>
 #include <QDebug>
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPointer>
 #include <QVTKOpenGLNativeWidget.h>
+#include <QSlider>
 
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
@@ -37,25 +38,25 @@ public:
 
     // 设置图像和切片参数
     void setImage(vtkSmartPointer<vtkImageData> image, SliceOrientation orientation);
-
     // 更新切片显示
     void updateSlice(int sliceIndex);
-
     // 初始化切片显示（设置默认切片索引和方向）
     void initializeSliceViewer();
-
     // 获取当前切片索引
     int currentSliceIndex() const { return m_sliceIndex; }
     // 获取当前切片方向
     SliceOrientation currentOrientation() const { return m_orientation; }
+    // 设置slider的范围和初始值
+    void setupSliceSlider();
 
 private:
     void initializeVTK();
     void setupViewer();
 
 private:
-    QVBoxLayout* m_layout;
+    QHBoxLayout* m_layout;
     QPointer<QVTKOpenGLNativeWidget> m_vtkWidget;
+    QSlider* m_sliceSlider;
 
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renderWindow;
     vtkSmartPointer<vtkImageViewer2> m_imageViewer;

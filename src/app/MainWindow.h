@@ -1,8 +1,8 @@
 #pragma once
 
 #include "io/NiftiReader.h"
-#include "render/VTKSliceViewer.h"
 #include <QMainWindow>
+#include <QLabel>
 
 class QAction;
 class ImageViewWidget;
@@ -28,8 +28,6 @@ private:
 
 	ImageToolWidget* imageToolWidget;
 	ImageViewWidget* imageViewWidget;
-	SliceViewer* sliceViewer;
-
 	NiftiInfoReader niftiInfoReader;
 	
 	QAction* openAction;
@@ -37,4 +35,9 @@ private:
 	QAction* infoAction;
 	QAction* exitAction;
 	QAction* aboutAction;
+
+	// 状态栏永久标签
+	QLabel* m_fileLabel       = nullptr;
+	QLabel* m_imageSizeLabel = nullptr;
+	void updateStatusBarLabels();
 };
