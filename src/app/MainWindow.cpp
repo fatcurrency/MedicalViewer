@@ -76,8 +76,7 @@ void MainWindow::openFile()
 void MainWindow::clearCurrent()
 {
     imageViewWidget->clearView();
-    niftiInfoReader.clearInfo();
-    niftiInfoReader.clearImageData();
+    niftiInfoReader.reset();
     updateStatusBarLabels();
     statusBar()->showMessage(tr("Current display cleared"), 2000);
 }

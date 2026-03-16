@@ -1,4 +1,7 @@
 #include "VTKSliceViewer.h"
+#include "SliceCameraUtils.h"
+
+#include <QSignalBlocker>
 
 SliceViewer::SliceViewer(QWidget* parent)
     : QWidget(parent),
@@ -86,13 +89,15 @@ void SliceViewer::setupViewer()
 
     m_imageViewer->SetSlice(m_sliceIndex);
     setupSliceSlider();
-    // 给 VTK 图像查看器启用【平行投影】
     auto* renderer = m_imageViewer->GetRenderer();
-    auto* camera = renderer ? renderer->GetActiveCamera() : nullptr;
-    if (camera){
-        camera->ParallelProjectionOn();
+    if (renderer)
+    {
+        renderer->ResetCamera();
+        const double preservedParallelScale = renderer->GetActiveCamera()
+            ? renderer->GetActiveCamera()->GetParallelScale()
+            : 0.0;
+        alignCameraToSlice(m_vtkImage, renderer, m_orientation, m_sliceIndex, preservedParallelScale);
     }
-    m_imageViewer->GetRenderer()->ResetCamera();
     m_imageViewer->Render();
 }
 
@@ -117,22 +122,21 @@ void SliceViewer::updateSlice(int sliceIndex)
             break;
     }
 
-    m_imageViewer->SetSlice(m_sliceIndex);
-    m_sliceSlider->setValue(m_sliceIndex);
-
-    // 保存当前视图的缩放比例 → 强制开启平行投影（不变形）→ 恢复之前的缩放 → 重置裁剪范围 → 刷新显示。
     auto* renderer = m_imageViewer->GetRenderer();
-    auto* camera = renderer ? renderer->GetActiveCamera() : nullptr;
-    const double preservedParallelScale = camera ? camera->GetParallelScale() : 0.0;
-    if (camera){
-        camera->ParallelProjectionOn();
-        if (preservedParallelScale > 0.0){
-            camera->SetParallelScale(preservedParallelScale);
-        }
+    const double preservedParallelScale = (renderer && renderer->GetActiveCamera())
+        ? renderer->GetActiveCamera()->GetParallelScale()
+        : 0.0;
+
+    m_imageViewer->SetSlice(m_sliceIndex);
+    if (m_sliceSlider->value() != m_sliceIndex)
+    {
+        QSignalBlocker blocker(m_sliceSlider);
+        m_sliceSlider->setValue(m_sliceIndex);
     }
-    if (renderer){
-        renderer->ResetCameraClippingRange();
-    }
+
+    // 保持缩放比例不变，同时让相机与当前切片面同轴，避免后半段切片掉出视锥。
+    alignCameraToSlice(m_vtkImage, renderer, m_orientation, m_sliceIndex, preservedParallelScale);
+
     m_imageViewer->Render();
 }
 
@@ -160,15 +164,11 @@ void SliceViewer::initializeSliceViewer()
 
     m_imageViewer->SetSlice(m_sliceIndex);
     setupSliceSlider();
-    // 给 VTK 图像查看器启用【平行投影】
     auto* renderer = m_imageViewer->GetRenderer();
-    auto* camera = renderer ? renderer->GetActiveCamera() : nullptr;
-    if (camera){
-        camera->ParallelProjectionOn();
-    }
-    if (renderer){
-        renderer->ResetCameraClippingRange();
-    }
+    const double preservedParallelScale = (renderer && renderer->GetActiveCamera())
+        ? renderer->GetActiveCamera()->GetParallelScale()
+        : 0.0;
+    alignCameraToSlice(m_vtkImage, renderer, m_orientation, m_sliceIndex, preservedParallelScale);
     m_imageViewer->Render();
 }
 
@@ -205,4 +205,36 @@ void SliceViewer::setupSliceSlider()
     m_sliceSlider->setMinimum(minSlice);
     m_sliceSlider->setMaximum(maxSlice);
     m_sliceSlider->setValue(m_sliceIndex);
+}
+
+void SliceViewer::clearImage()
+{
+    m_vtkImage = nullptr;
+    m_sliceIndex = 0;
+    m_orientation = Axial;
+
+    // 断开 vtkImageViewer2 与渲染窗口的绑定，重置为新实例
+    m_imageViewer = vtkSmartPointer<vtkImageViewer2>::New();
+
+    // 移除渲染窗口中的所有 renderer
+    auto* rendererCollection = m_renderWindow->GetRenderers();
+    rendererCollection->InitTraversal();
+    while (auto* ren = rendererCollection->GetNextItem())
+    {
+        m_renderWindow->RemoveRenderer(ren);
+        rendererCollection->InitTraversal(); // 移除后重新遍历
+    }
+
+    // 添加一个干净的空 renderer（平行投影）
+    auto blankRenderer = vtkSmartPointer<vtkRenderer>::New();
+    blankRenderer->SetBackground(0.0, 0.0, 0.0);
+    blankRenderer->GetActiveCamera()->ParallelProjectionOn();
+    m_renderWindow->AddRenderer(blankRenderer);
+
+    m_sliceSlider->setEnabled(false);
+    m_sliceSlider->setMinimum(0);
+    m_sliceSlider->setMaximum(0);
+    m_sliceSlider->setValue(0);
+
+    m_renderWindow->Render();
 }

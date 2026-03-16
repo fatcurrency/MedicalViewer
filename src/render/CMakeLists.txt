@@ -3,6 +3,8 @@
 add_library(MedicalViewerRender
     VTKSliceViewer.cpp
     VTKSliceViewer.h
+    SliceCameraUtils.cpp
+    SliceCameraUtils.h
 )
 
 # 链接依赖库

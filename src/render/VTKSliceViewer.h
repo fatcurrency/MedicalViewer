@@ -15,6 +15,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyleImage.h>
 #include <vtkGenericOpenGLRenderWindow.h>
+#include <vtkRendererCollection.h>
 #include <vtkCamera.h>
 #include <vtkImageReslice.h>
 #include <vtkMatrix4x4.h>
@@ -48,6 +49,8 @@ public:
     SliceOrientation currentOrientation() const { return m_orientation; }
     // 设置slider的范围和初始值
     void setupSliceSlider();
+    // 清除显示的图像数据
+    void clearImage();
 
 private:
     void initializeVTK();

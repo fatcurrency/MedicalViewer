@@ -234,6 +234,27 @@ QString NiftiInfoReader::getInfo() const
     return m_info;
 }
 
+bool NiftiInfoReader::reset()
+{
+    m_imageBuffer.clear();
+    m_imageBuffer.squeeze();
+    m_itkImage = nullptr;
+    m_vtkImage = nullptr;
+
+    m_info.clear();
+    m_fileName.clear();
+    m_dimensions = 0;
+    m_shape.clear();
+    m_spacing.clear();
+    m_origin.clear();
+    m_direction.clear();
+    m_componentType.clear();
+    m_pixelType.clear();
+    m_numberOfComponents = 0;
+
+    return true;
+}
+
 bool NiftiInfoReader::clearInfo()
 {
     m_info.clear();

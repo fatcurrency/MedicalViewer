@@ -57,6 +57,9 @@ void ImageViewWidget::setVtkImageData(vtkSmartPointer<vtkImageData> image)
 void ImageViewWidget::clearView()
 {
 	textLabel->setText(tr("No images currently loaded"));
+	axialSliceViewer->clearImage();
+	sagittalSliceViewer->clearImage();
+	coronalSliceViewer->clearImage();
 }
 
 void ImageViewWidget::updateTextLabel(const QString& text)

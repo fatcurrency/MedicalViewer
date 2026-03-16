@@ -27,6 +27,7 @@ public:
     bool loadImageInfo(const QString& path);
     QString getInfo() const;
 
+    bool reset();
     bool clearInfo();
     bool clearImageData();
 
