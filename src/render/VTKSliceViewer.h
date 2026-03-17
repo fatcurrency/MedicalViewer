@@ -23,6 +23,8 @@
 #include <vtkImageMapToColors.h>
 #include <vtkLookupTable.h>
 
+class SliceInteraction;
+
 class SliceViewer : public QWidget
 {
     Q_OBJECT
@@ -67,4 +69,6 @@ private:
     vtkSmartPointer<vtkImageData> m_vtkImage;
     SliceOrientation m_orientation;
     int m_sliceIndex;
+    // 交互处理器，负责处理鼠标滚轮和键盘事件以切换切片
+    SliceInteraction* m_interactionHandler;
 };

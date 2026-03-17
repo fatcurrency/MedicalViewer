@@ -1,5 +1,6 @@
 #include "VTKSliceViewer.h"
 #include "SliceCameraUtils.h"
+#include "SliceInteraction.h"
 
 #include <QSignalBlocker>
 
@@ -11,15 +12,25 @@ SliceViewer::SliceViewer(QWidget* parent)
     m_renderWindow(vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New()),
     m_imageViewer(vtkSmartPointer<vtkImageViewer2>::New()),
     m_orientation(Axial),
-    m_sliceIndex(0)
+    m_sliceIndex(0),
+    m_interactionHandler(nullptr)
 {
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(2);
     m_layout->addWidget(m_vtkWidget);
     m_layout->addWidget(m_sliceSlider);
+    // 为 m_sliceSlider 添加边框以区分它与渲染区域
+    m_sliceSlider->setStyleSheet("QSlider { border: 1px solid gray; }");
+    m_sliceSlider->setEnabled(false);
+    m_sliceSlider->setMinimum(0);
+    m_sliceSlider->setMaximum(0);
+    m_sliceSlider->setValue(0);
 
     setLayout(m_layout);
     initializeVTK();
+
+    // 安装交互处理器：处理鼠标滚轮与键盘切片切换
+    m_interactionHandler = new SliceInteraction(this, m_vtkWidget, this);
 
     // 连接 slider 的值改变信号到切片更新槽
     connect(m_sliceSlider, &QSlider::valueChanged, this, &SliceViewer::updateSlice);
@@ -90,8 +101,7 @@ void SliceViewer::setupViewer()
     m_imageViewer->SetSlice(m_sliceIndex);
     setupSliceSlider();
     auto* renderer = m_imageViewer->GetRenderer();
-    if (renderer)
-    {
+    if (renderer){
         renderer->ResetCamera();
         const double preservedParallelScale = renderer->GetActiveCamera()
             ? renderer->GetActiveCamera()->GetParallelScale()
