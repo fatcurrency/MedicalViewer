@@ -13,6 +13,6 @@ ImageToolWidget::ImageToolWidget(QWidget* parent)
 
     //设置背景颜色为浅蓝色
     setAttribute(Qt::WA_StyledBackground, true); // 确保样式背景被绘制
-    setStyleSheet("background-color: #4aeaff;");
+    setStyleSheet("background-color: #d6faff;");
 
 }
