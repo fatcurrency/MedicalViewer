@@ -7,15 +7,27 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Qt
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 
 # ITK
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
 
-# VTK
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+# VTK (9.x module system: no VTK_USE_FILE)
+find_package(VTK 9 REQUIRED COMPONENTS
+    CommonCore
+    CommonColor
+    CommonDataModel
+    CommonMath
+    ImagingCore
+    ImagingColor
+    InteractionImage
+    InteractionStyle
+    RenderingCore
+    RenderingOpenGL2
+    RenderingFreeType
+    GUISupportQt
+)
 
 add_subdirectory(src/app)
 add_subdirectory(src/core)
@@ -31,4 +43,10 @@ target_link_libraries(MedicalViewer
     Qt5::Widgets
     ${ITK_LIBRARIES}
     ${VTK_LIBRARIES}
+)
+
+# Initialize VTK object factories (rendering/interaction backends)
+vtk_module_autoinit(
+    TARGETS MedicalViewer MedicalViewerApp MedicalViewerRender MedicalViewerIO
+    MODULES ${VTK_LIBRARIES}
 )
